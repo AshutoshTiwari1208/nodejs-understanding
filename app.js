@@ -13,10 +13,19 @@ const server = http.createServer((req, res) => {
 		return res.end();
 	}
 	if (req.url == "/home") {
-		res.statusCode = 302; //redirect !
-		res.setHeader("location", "/"); //location to redirect
-		fs.writeFileSync("names.txt", "bhushan ji");
-		return res.end();
+		let body = [];
+		req.on("data", chunk => {
+			console.log(" Chunk--> ", chunk);
+			body.push(chunk);
+		});
+		req.on("end", () => {
+			let parsedData = Buffer.concat(body).toString();
+			fs.appendFile("names.txt", `${parsedData.split("=")[1]} \n`, err => {
+				res.statusCode = 302; //redirect !
+				res.setHeader("location", "/"); //location to redirect
+				return res.end();
+			});
+		});
 	}
 
 	res.setHeader("Content-Type", "text/html");
